@@ -363,3 +363,12 @@ h3{font-size:1.25rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--leaf)}
      .al-tag{font-size:.75rem}
      .al-body .btn{padding:5px 12px;font-size:.82rem}
      .al-soon{font-size:.78rem} }
+
+/* ==========================================================
+   【回到最上面按鈕】
+   功能：右下角圓形按鈕，捲動超過 400px 才顯示（.show 由頁面內的 script 切換）
+   頁面：ongoing.html、finished.html
+   ========================================================== */
+   .to-top{position:fixed;right:18px;bottom:18px;z-index:20;width:46px;height:46px;border:0;border-radius:50%;background:var(--honey);color:#3b2a10;font-size:1.3rem;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.2);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,transform .25s,visibility .25s}
+   .to-top.show{opacity:1;visibility:visible;transform:none}
+   .to-top:hover{background:var(--garden);color:#fff}
