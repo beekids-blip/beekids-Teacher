@@ -19,7 +19,7 @@
     { t: '服事預備', p: 'prep/index.html' },
     { t: '尚未架設', p: 'other/other.html', c: [
       { t: '特殊專案', p: 'projects/index.html',},
-      { t: '相簿', p: 'gallery.html' },
+      { t: '相簿', p: 'projects/finished.html' },
       { t: '資料索引', p: 'resources.html' },
       ]}
   ];
