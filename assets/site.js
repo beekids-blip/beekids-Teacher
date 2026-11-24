@@ -14,7 +14,8 @@
       { t: '出席請假', p: 'volunteers/service.html' },
       { t: '義工月會', p: 'volunteers/monthly-meeting.html', c: [
         { t: '月會課程紀錄', p: 'volunteers/meeting-records.html', hide: true },]},
-      { t: '年度行事曆', p: 'volunteers/calendar.html' },]},
+      { t: '年度行事曆', p: 'volunteers/calendar.html' },
+      { t: '連結管理', p: 'volunteers/links.html' },]},
     { t: '兒童相關', p: 'children/index.html' },
     { t: '日常服事', p: 'prep/index.html' },
     { t: '活動相關', p: 'other/other.html', c: [
