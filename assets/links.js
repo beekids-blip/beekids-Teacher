@@ -10,8 +10,8 @@
  * 程式裡要用網址時： const url = await BeeLinks.get('學生資料CSV', '備用網址');
  */
 (() => {
-  const CSV = 'https://docs.google.com/spreadsheets/d/e/貼上「連結設定」發布後的網址/pub?gid=0&single=true&output=csv';
-  const EDIT = 'https://docs.google.com/spreadsheets/d/貼上試算表編輯網址/edit';     // 「前往編輯」按鈕連到這裡（需要有權限才打得開）
+  const CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3P6p5UnGEkOSwMfRDNtmxhiTmpQigTBUe-CEWVKWLJNXDntJLeEE2XA3xpdi-iX_tMZsrdCT0RtAM/pub?output=csv';
+  const EDIT = 'https://docs.google.com/spreadsheets/d/1eD7yaWNksm8p9IAGDDFbngBXXmD7TNprQU_9L_AOvaA/edit?usp=sharing';     // 「前往編輯」按鈕連到這裡（需要有權限才打得開）
   const TTL = 5 * 60 * 1000;                                                            // 快取 5 分鐘，換頁時不用重新讀取
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const safe = u => /^https?:\/\//i.test(u || '') ? u : '';                              // 只接受 http(s) 網址，擋掉 javascript: 之類
