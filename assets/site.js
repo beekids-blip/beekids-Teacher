@@ -64,7 +64,12 @@
 
  const main = document.querySelector('main.page') || document.createElement('main');
  const article = main.querySelector('article') || document.createElement('article');
-
+      
+      // 連結集中管理
+      const lk = document.createElement('script');
+      lk.src = href('assets/links.js');
+      document.head.appendChild(lk);
+  
   // Breadcrumb
   if (trail.length > 1) {
     const crumbs = [NAV[0], ...trail.slice(0, -1)].map(link).join('<span>/</span>');
