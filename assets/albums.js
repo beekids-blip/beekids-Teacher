@@ -1,11 +1,27 @@
-(() => {
-  const container = document.querySelector('[data-albums]');
-  if (!container) return;
+/* 活動紀錄：讀取相簿清單（支援 [data-albums] 的 data-csv 或預設 CSV，並保留 #albums 備援），
+ * 依年份分組（新的在前），畫成卡片，按鈕連到 Google 相簿。可依 Hashtag 分類篩選。
+ * 清單寫在 <script type="text/plain" id="albums"> 裡，一個相簿一行，欄位用 | 隔開：
+ *   日期 | 活動名稱 | Google 相簿網址 | 封面圖路徑（選填） | 簡介（選填） | #標籤 #標籤（選填）
+ * 以 # 開頭的欄位一律當作標籤，可以放在第 4 欄之後的任何位置，所以沒有封面和簡介時可以直接寫：
+ *   2026/12/20 | 聖誕節 Bee Day | 相簿網址 | #BeeDay #聖誕節
+ * 標籤之間用空白、逗號或頓號隔開；標籤本身不能有空白。日期可寫 2026/12/20，連續幾天寫 2027/02/01-03。
+ * 星期幾會自動算出來。以 # 開頭的「整行」會被忽略（所以標籤一定要放在 | 後面）。
+ */
+(async () => {
+  const DEFAULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3P6p5UnGEkOSwMfRDNtmxhiTmpQigTBUe-CEWVKWLJNXDntJLeEE2XA3xpdi-iX_tMZsrdCT0RtAM/pub?gid=2082854569&single=true&output=csv';
 
-  const csvUrl = (container.getAttribute('data-csv') || '').trim();
-  const fallbackText = (document.getElementById('albums')?.textContent || '').trim();
+  const box = document.querySelector('[data-albums]');
+  const src = document.getElementById('albums');
+  if (!box) return;
 
-  function parseCsv(text) {
+  const WD = '日一二三四五六';
+  const pad = n => String(n).padStart(2, '0');
+  const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const url = s => /^https?:\/\//i.test(s || '') ? s : '';           // 相簿網址只接受真的網址
+  const img = s => /^(https?:\/\/|\.{0,2}\/|[\w-])/.test(s || '') && /\.(jpe?g|png|webp|gif|avif)(\?.*)?$/i.test(s) ? s : '';
+  const key = t => String(t || '').toLowerCase();
+
+  function parseCsvRows(text) {
     const rows = [];
     let row = [], field = '', inQuotes = false;
     for (let i = 0; i < text.length; i++) {
@@ -39,71 +55,114 @@
     return rows.filter(r => r.some(cell => String(cell || '').trim() !== ''));
   }
 
-  // 將 CSV 轉成與原本「日期 | 活動名稱 | 相簿網址 | 封面圖 | 簡介 | 標籤」相容的物件陣列
-  function rowsToAlbums(rows) {
+  // 將 CSV 轉成與原本「日期 | 活動名稱 | 相簿網址 | 封面圖 | 簡介 | #標籤」相容的陣列格式
+  function csvToLines(csvText) {
+    const rows = parseCsvRows(csvText);
     if (!rows.length) return [];
     const headers = rows[0].map(h => String(h || '').trim());
-    const hasHeader = headers.some(h => /日期|活動|名稱|相簿|網址|封面|簡介|標籤|date|title|url/i.test(h));
-    const idx = (names, fallbackIndex) => {
-      if (!hasHeader) return fallbackIndex;
-      const found = headers.findIndex(h => names.some(n => h.includes(n)));
-      return found >= 0 ? found : fallbackIndex;
+    const hasHeader = headers.some(h => /日期|活動|名稱|相簿|網址|封面|簡介|標籤|date|title|url|link|tag/i.test(h));
+    const findCol = (patterns, fallback) => {
+      if (!hasHeader) return fallback;
+      const idx = headers.findIndex(h => patterns.some(p => p.test(h)));
+      return idx >= 0 ? idx : fallback;
     };
 
-    const iDate = idx(['日期'], 0);
-    const iTitle = idx(['活動', '名稱'], 1);
-    const iUrl = idx(['相簿', '網址', '連結'], 2);
-    const iCover = idx(['封面', '圖片'], 3);
-    const iDesc = idx(['簡介', '說明'], 4);
-    const iTags = idx(['標籤', '分類'], 5);
+    const iDate = findCol([/日期/, /^date$/i], 0);
+    const iTitle = findCol([/活動/, /名稱/, /標題/, /title/i, /name/i], 1);
+    const iLink = findCol([/相簿/, /網址/, /連結/, /url/i, /link/i], 2);
+    const iCover = findCol([/封面/, /圖片/, /cover/i, /image/i], 3);
+    const iNote = findCol([/簡介/, /說明/, /備註/, /note/i, /desc/i], 4);
+    const iTags = findCol([/標籤/, /分類/, /tag/i], 5);
 
     const dataRows = hasHeader ? rows.slice(1) : rows;
-    return dataRows.map(r => ({
-      date: String(r[iDate] || '').trim(),
-      title: String(r[iTitle] || '').trim(),
-      url: String(r[iUrl] || '').trim(),
-      cover: String(r[iCover] || '').trim(),
-      desc: String(r[iDesc] || '').trim(),
-      tags: String(r[iTags] || '').trim(),
-    })).filter(item => item.date || item.title);
+    return dataRows.map(r => {
+      const cells = [
+        String(r[iDate] || '').trim(),
+        String(r[iTitle] || '').trim(),
+        String(r[iLink] || '').trim(),
+        String(r[iCover] || '').trim(),
+        String(r[iNote] || '').trim(),
+        String(r[iTags] || '').trim(),
+      ];
+      return cells.filter(Boolean).join(' | ');
+    }).filter(Boolean);
   }
 
-  function parsePlainText(raw) {
-    return raw
-      .split(/\r?\n/)
-      .map(line => line.trim())
-      .filter(Boolean)
-      .map(line => {
-        const parts = line.split('|').map(s => s.trim());
-        return {
-          date: parts[0] || '',
-          title: parts[1] || '',
-          url: parts[2] || '',
-          cover: parts[3] || '',
-          desc: parts[4] || '',
-          tags: parts[5] || '',
-        };
-      });
-  }
-
-  async function loadAlbums() {
+  async function loadSourceLines() {
+    const csvUrl = (box.getAttribute('data-csv') || '').trim() || DEFAULT_CSV;
     if (csvUrl) {
       try {
         const res = await fetch(csvUrl, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const text = await res.text();
-        const items = rowsToAlbums(parseCsv(text));
-        if (items.length) return items;
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const lines = csvToLines(await res.text());
+        if (lines.length) return lines;
       } catch (err) {
-        console.warn('活動紀錄 CSV 讀取失敗，改用頁面備援清單：', err);
+        console.warn('活動紀錄 CSV 讀取失敗，改用頁面 #albums 清單：', err);
       }
     }
-    return parsePlainText(fallbackText);
+    return src ? src.textContent.split('\n').map(l => l.trim()).filter(l => l && l[0] !== '#') : [];
   }
 
-  // 這裡把 items 交給你原本用來渲染 container 的函式，例如 renderAlbums(container, items)
-  loadAlbums().then(items => {
-    window.__BEE_ALBUMS__ = items;
-    container.dispatchEvent(new CustomEvent('albums:loaded', { detail: items }));
+  const lines = await loadSourceLines();
+
+  const al = lines.map(l => {
+    const f = l.split('|').map(x => x.trim());
+    const m = (f[0] || '').match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})(?:\s*[-–~]\s*(?:(\d{1,2})[\/.\-])?(\d{1,2}))?$/);
+    if (!m || !f[1]) return null;
+    const y = +m[1], mo = +m[2], d1 = +m[3], d = new Date(y, mo - 1, d1);
+    const em = m[4] ? +m[4] : mo, d2 = m[5] ? +m[5] : d1;
+    const date = `${y}/${pad(mo)}/${pad(d1)}` + ((em !== mo || d2 !== d1) ? `–${em !== mo ? pad(em) + '/' : ''}${pad(d2)}` : `（${WD[d.getDay()]}）`);
+    const rest = f.slice(3);
+    const tags = rest.filter(x => x[0] === '#').flatMap(x => x.split(/[\s,，、]+/)).map(t => t.replace(/^#+/, '')).filter(Boolean);
+    const plain = rest.filter(x => x[0] !== '#');                       // 其餘欄位維持原本順序：封面、簡介
+    const seen = new Set(), uniq = tags.filter(t => !seen.has(key(t)) && seen.add(key(t)));
+    return { d, y, date, title: f[1], link: url(f[2]), cover: img(plain[0]), note: plain[1] || '', tags: uniq };
+  }).filter(Boolean).sort((a, b) => b.d - a.d);
+
+  // 標籤統計：次數多的排前面，次數一樣就依出現順序
+  const stat = new Map();
+  al.forEach(a => a.tags.forEach(t => { const s = stat.get(key(t)) || { label: t, n: 0 }; s.n++; stat.set(key(t), s); }));
+  const tagList = [...stat.entries()].sort((a, b) => b[1].n - a[1].n);
+
+  const card = a => `<article class="al-card" data-tags="${esc(a.tags.map(key).join('|'))}">
+    ${a.link ? `<a class="al-cover" href="${esc(a.link)}" target="_blank" rel="noopener" aria-label="開啟「${esc(a.title)}」相簿">` : '<div class="al-cover">'}
+      ${a.cover ? `<img src="${esc(a.cover)}" alt="" loading="lazy">` : '<span class="al-ph">Bee Kids</span>'}
+    ${a.link ? '</a>' : '</div>'}
+    <div class="al-body">
+      <p class="al-date">${esc(a.date)}</p>
+      <h3>${esc(a.title)}</h3>
+      ${a.note ? `<p class="al-note">${esc(a.note)}</p>` : ''}
+      ${a.tags.length ? `<ul class="al-tags">${a.tags.map(t => `<li><button type="button" class="al-tag" data-tag="${esc(key(t))}">#${esc(t)}</button></li>`).join('')}</ul>` : ''}
+      ${a.link ? `<a class="btn solid" href="${esc(a.link)}" target="_blank" rel="noopener">活動報名中</a>` : '<span class="al-soon"></span>'}
+      ${a.link ? `<a class="btn solid" href="${esc(a.link)}" target="_blank" rel="noopener">活動相簿</a>` : '<span class="al-soon"></span>'}
+    </div>
+  </article>`;
+
+  const years = [...new Set(al.map(a => a.y))];
+  const bar = tagList.length ? `<div class="al-filter" role="group" aria-label="依分類篩選">
+    <button type="button" data-tag="" aria-pressed="true">全部<small>${al.length}</small></button>
+    ${tagList.map(([k, s]) => `<button type="button" data-tag="${esc(k)}" aria-pressed="false">#${esc(s.label)}<small>${s.n}</small></button>`).join('')}
+  </div>` : '';
+  box.innerHTML = years.length
+    ? bar + years.map(y => `<section class="al-year"><h2>${y} 年</h2><div class="al-grid">${al.filter(a => a.y === y).map(card).join('')}</div></section>`).join('')
+    : '<p class="callout">目前還沒有活動紀錄。</p>';
+
+  // 篩選：點上方按鈕或卡片上的標籤；再點一次同一個標籤，回到全部
+  let cur = '';
+  const apply = k => {
+    cur = k;
+    box.querySelectorAll('.al-filter button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tag === k)));
+    box.querySelectorAll('.al-card').forEach(c => { c.hidden = !!k && !c.dataset.tags.split('|').includes(k); });
+    box.querySelectorAll('.al-year').forEach(s => { s.hidden = ![...s.querySelectorAll('.al-card')].some(c => !c.hidden); });
+    const label = k && stat.get(k) ? stat.get(k).label : '';
+    history.replaceState(null, '', label ? '#' + encodeURIComponent(label) : location.pathname + location.search);
+  };
+  box.addEventListener('click', e => {
+    const b = e.target.closest('[data-tag]'); if (!b) return;
+    const k = b.dataset.tag;
+    apply(k === cur ? '' : k);
+    if (b.classList.contains('al-tag')) box.querySelector('.al-filter')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
+  const h = decodeURIComponent(location.hash.slice(1)).toLowerCase();    // 網址帶 #標籤，就直接篩選好（例如 records.html#BeeDay）
+  if (h && stat.has(h)) apply(h);
 })();
