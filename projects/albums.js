@@ -11,7 +11,7 @@
   const DEFAULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3P6p5UnGEkOSwMfRDNtmxhiTmpQigTBUe-CEWVKWLJNXDntJLeEE2XA3xpdi-iX_tMZsrdCT0RtAM/pub?gid=2082854569&single=true&output=csv';
   // 若目前在子資料夾（如 /projects/），自動補上 ../；在根目錄或 /assets/ 同層則直接用 assets/img/...
  const DEFAULT_COVER = (() => {
-  const scriptEl = document.currentScript || document.querySelector('script[src*="assets/albums.js"]');
+  const scriptEl = document.currentScript || document.querySelector('script[src*="albums.js"]');
   if (scriptEl && scriptEl.src) {
     return new URL('../assets/img/BeeKids_白底.jpg', scriptEl.src).href;
   }
