@@ -22,48 +22,24 @@
     for (let i = 0; i < line.length; i++) {
       const ch = line[i];
       if (ch === '"') {
-        if (quoted && line[i + 1] === '"') {
-          cur += '"';
-          i++;
-        } else {
-          quoted = !quoted;
-        }
-      } else if (ch === ',' && !quoted) {
-        out.push(cur.trim());
-        cur = '';
-      } else {
-        cur += ch;
-      }
-    }
-    out.push(cur.trim());
-    return out;
-  };
+        if (quoted && line[i + 1] === '"') {cur += '"';i++;} 
+        else {quoted = !quoted;}} 
+      else if (ch === ',' && !quoted) {out.push(cur.trim());cur = '';} 
+      else {cur += ch;}}out.push(cur.trim());
+    return out;  };
 
   // 將 CSV 文字轉為「日期 | 活動名稱」行清單（略過第 1 列標題）
   const csvToEventLines = csvText => {
-    const rows = csvText
-      .split(/\r?\n/)
-      .map(l => l.trim())
-      .filter(Boolean);
+    const rows = csvText .split(/\r?\n/) .map(l => l.trim()) .filter(Boolean);
     if (rows.length <= 1) return '';
-    return rows
-      .slice(1)
-      .map(line => {
+    return rows .slice(1) .map(line => {
         const cols = parseCSVLine(line);
         const date = (cols[0] || '').trim();
         const title = (cols[1] || '').trim();
-        return date && title ? `${date} | ${title}` : '';
-      })
-      .filter(Boolean)
-      .join('\n');
-  };
+        return date && title ? `${date} | ${title}` : ''; }) .filter(Boolean) .join('\n');};
 
   const renderCalendar = rawText => {
-    const ev = (rawText || '')
-      .split('\n')
-      .map(l => l.trim())
-      .filter(l => l && l[0] !== '#')
-      .map(l => {
+    const ev = (rawText || '') .split('\n') .map(l => l.trim()) .filter(l => l && l[0] !== '#') .map(l => {
         const m = l.match(/^(\d{1,2})\/(\d{1,2})(?:\s*[-–~]\s*(?:(\d{1,2})\/)?(\d{1,2}))?\s*\|\s*(.+)$/);
         if (!m) return null;
         const mo = +m[1], d1 = +m[2], em = m[3] ? +m[3] : mo, d2 = m[4] ? +m[4] : d1;
@@ -75,10 +51,11 @@
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const M = today.getFullYear() === Y ? today.getMonth() + 1 : 0; // 本月（不是這一年就不標）
+    const pad2 = n => String(n).padStart(2, '0');
     const single = x => x.mo === x.em && x.d1 === x.d2;
     const label = x => single(x)
-      ? `${x.mo}/${x.d1}日<small>（${WD[x.s.getDay()]}）</small>`
-      : `${x.mo}/${x.d1}–${x.em === x.mo ? '' : x.em + '/'}${x.d2}`;
+      ? `${pad2(x.mo)}/${pad2(x.d1)}`
+      : `${pad2(x.mo)}/${pad2(x.d1)}-${x.em === x.mo ? '' : pad2(x.em) + '/'}${pad2(x.d2)}`;
 
     const nx = ev.find(x => x.e >= today);
     let nextHTML = '';
