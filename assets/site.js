@@ -14,7 +14,7 @@
       { t: '出席請假', p: 'volunteers/service.html' },
       { t: '義工月會', p: 'volunteers/monthly-meeting.html', c: [
         { t: '月會課程紀錄', p: 'volunteers/meeting-records.html', hide: true },]},
-      { t: '年度行事曆', p: 'volunteers/calendar.html' },]
+      { t: '年度行事曆', p: 'volunteers/calendar.html' },]],
     { t: '兒童', p: 'children/index.html' },
     { t: '活動', p: 'other/other.html', c: [
       { t: '活動相簿', p: 'projects/finished.html' },]},
@@ -59,33 +59,34 @@
   // Favicon
   document.head.insertAdjacentHTML('beforeend', `<link rel="icon" href="${href('assets/img/純LOGO_透明.png')}">`);
 
- const main = document.querySelector('main.page') || document.createElement('main');
- const article = main.querySelector('article') || document.createElement('article');
-      
-      // 連結集中管理
-      const lk = document.createElement('script');
-      lk.src = href('assets/links.js');
-      document.head.appendChild(lk);
-  
+  const main = document.querySelector('main.page') || document.createElement('main');
+  const article = main.querySelector('article') || document.createElement('article');
+
+  // 連結集中管理
+  const lk = document.createElement('script');
+  lk.src = href('assets/links.js');
+  document.head.appendChild(lk);
+
   // Breadcrumb
   if (trail.length > 1) {
     const crumbs = [NAV[0], ...trail.slice(0, -1)].map(link).join('<span>/</span>');
     article.insertAdjacentHTML('afterbegin', `<nav class="crumbs" aria-label="麵包屑">${crumbs}</nav>`);
   }
 
- // Child page cards: <div data-children></div> (current page) or data-children="root" (all sections)
-document.querySelectorAll('[data-children]').forEach(el => {
-  const list = el.dataset.children === 'root' ? NAV.slice(1) : ((node && node.c) || []).filter(x => !x.hide);  if (!list.length) return el.remove();
-  if (el.classList.contains('btns')) {          // 放在 hero 裡：用按鈕樣式
-  const brk = +el.dataset.break || 0;         // data-break="2"：第 2 顆後面換行
-  el.innerHTML = list.map((n, i) =>
-    `<a class="btn line" href="${href(n.p)}">${n.t}</a>` + (brk && i === brk - 1 ? '<span class="btns-br"></span>' : '')
-  ).join('');
-  return;
-}
-  el.className = 'cards';                       // 其他地方：卡片樣式
-  el.innerHTML = list.map(n => `<a class="card" href="${href(n.p)}"><b>${n.t}</b></a>`).join('');
-});
+  // Child page cards: <div data-children></div> (current page) or data-children="root" (all sections)
+  document.querySelectorAll('[data-children]').forEach(el => {
+    const list = el.dataset.children === 'root' ? NAV.slice(1) : ((node && node.c) || []).filter(x => !x.hide);
+    if (!list.length) return el.remove();
+    if (el.classList.contains('btns')) {          // 放在 hero 裡：用按鈕樣式
+      const brk = +el.dataset.break || 0;         // data-break="2"：第 2 顆後面換行
+      el.innerHTML = list.map((n, i) =>
+        `<a class="btn line" href="${href(n.p)}">${n.t}</a>` + (brk && i === brk - 1 ? '<span class="btns-br"></span>' : '')
+      ).join('');
+      return;
+    }
+    el.className = 'cards';                       // 其他地方：卡片樣式
+    el.innerHTML = list.map(n => `<a class="card" href="${href(n.p)}"><b>${n.t}</b></a>`).join('');
+  });
 
   // In-page TOC
   if (!main.classList.contains('no-toc')) {
