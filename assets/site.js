@@ -8,7 +8,7 @@
 (() => {
   const NAV = [
     { t: '首頁', p: 'index.html' },
-    { t: '義工相關', p: 'volunteers/index.html', c: [
+    { t: '義工', p: 'volunteers/index.html', c: [
       { t: '義工守則', p: 'volunteers/rules.html' },
       { t: '義工成員', p: 'volunteers/members.html' },
       { t: '出席請假', p: 'volunteers/service.html' },
@@ -16,13 +16,10 @@
         { t: '月會課程紀錄', p: 'volunteers/meeting-records.html', hide: true },]},
       { t: '年度行事曆', p: 'volunteers/calendar.html' },
       { t: '連結管理', p: 'volunteers/links.html' },]},
-    { t: '兒童相關', p: 'children/index.html' },
-    { t: '日常服事', p: 'prep/index.html' },
-    { t: '活動相關', p: 'other/other.html', c: [
-      { t: '專案計畫', p: 'projects/index.html',},
-      { t: '活動相簿', p: 'projects/finished.html' },
-      { t: '資料索引', p: 'resources.html' },
-      ]}
+    { t: '兒童', p: 'children/index.html' },
+    { t: '活動', p: 'other/other.html', c: [
+      { t: '活動相簿', p: 'projects/finished.html' },]},
+    { t: '網站管理', p: 'index.html', hide: true }
   ];
 
   const ROOT = new URL('../', document.currentScript.src);
