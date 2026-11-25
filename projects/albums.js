@@ -13,7 +13,7 @@
  const DEFAULT_COVER = (() => {
   const scriptEl = document.currentScript || document.querySelector('script[src*="assets/albums.js"]');
   if (scriptEl && scriptEl.src) {
-    return new URL('img/BeeKids_白底.jpg', scriptEl.src).href;
+    return new URL('../assets/img/BeeKids_白底.jpg', scriptEl.src).href;
   }
   return 'assets/img/BeeKids_白底.jpg';
 })();
