@@ -77,7 +77,7 @@
     const M = today.getFullYear() === Y ? today.getMonth() + 1 : 0; // 本月（不是這一年就不標）
     const single = x => x.mo === x.em && x.d1 === x.d2;
     const label = x => single(x)
-      ? `${x.mo}/${x.d1}<small>${WD[x.s.getDay()]}</small>`
+      ? `${x.mo}/${x.d1}日<small>（${WD[x.s.getDay()]}）</small>`
       : `${x.mo}/${x.d1}–${x.em === x.mo ? '' : x.em + '/'}${x.d2}`;
 
     const nx = ev.find(x => x.e >= today);
