@@ -9,6 +9,12 @@
  */
 (async () => {
   const DEFAULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3P6p5UnGEkOSwMfRDNtmxhiTmpQigTBUe-CEWVKWLJNXDntJLeEE2XA3xpdi-iX_tMZsrdCT0RtAM/pub?gid=2082854569&single=true&output=csv';
+  // 若目前在子資料夾（如 /projects/），自動補上 ../；在根目錄或 /assets/ 同層則直接用 assets/img/...
+  const DEFAULT_COVER = (() => {
+    const segs = location.pathname.split('/').filter(Boolean);
+    const prefix = segs.length > 1 ? '../'.repeat(segs.length - 1) : '';
+    return `${prefix}assets/img/BeeKids_白底.jpg`;
+  })();
 
   const box = document.querySelector('[data-albums]');
   const src = document.getElementById('albums');
@@ -124,9 +130,11 @@
   al.forEach(a => a.tags.forEach(t => { const s = stat.get(key(t)) || { label: t, n: 0 }; s.n++; stat.set(key(t), s); }));
   const tagList = [...stat.entries()].sort((a, b) => b[1].n - a[1].n);
 
-  const card = a => `<article class="al-card" data-tags="${esc(a.tags.map(key).join('|'))}">
+  const card = a => {
+    const thumb = a.cover || DEFAULT_COVER;
+    return `<article class="al-card" data-tags="${esc(a.tags.map(key).join('|'))}">
     ${a.link ? `<a class="al-cover" href="${esc(a.link)}" target="_blank" rel="noopener" aria-label="開啟「${esc(a.title)}」相簿">` : '<div class="al-cover">'}
-      ${a.cover ? `<img src="${esc(a.cover)}" alt="" loading="lazy">` : '<span class="al-ph">Bee Kids</span>'}
+      <img src="${esc(thumb)}" alt="${esc(a.title)}" loading="lazy">
     ${a.link ? '</a>' : '</div>'}
     <div class="al-body">
       <p class="al-date">${esc(a.date)}</p>
@@ -136,6 +144,7 @@
       ${a.link ? `<a class="btn solid" href="${esc(a.link)}" target="_blank" rel="noopener">活動相簿</a>` : '<span class="al-soon"></span>'}
     </div>
   </article>`;
+  };
 
   const years = [...new Set(al.map(a => a.y))];
   const bar = tagList.length ? `<div class="al-filter" role="group" aria-label="依分類篩選">
