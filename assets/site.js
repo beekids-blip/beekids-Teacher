@@ -15,11 +15,10 @@
       { t: '義工月會', p: 'volunteers/monthly-meeting.html', c: [
         { t: '月會課程紀錄', p: 'volunteers/meeting-records.html', hide: true },]},
       { t: '年度行事曆', p: 'volunteers/calendar.html' },
-      { t: '連結管理', p: 'volunteers/links.html' },]},
     { t: '兒童', p: 'children/index.html' },
     { t: '活動', p: 'other/other.html', c: [
       { t: '活動相簿', p: 'projects/finished.html' },]},
-    { t: '網站管理', p: 'index.html', hide: true }
+    { t: '網站管理', p: 'links.html'}
   ];
 
   const ROOT = new URL('../', document.currentScript.src);
