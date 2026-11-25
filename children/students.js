@@ -3,8 +3,8 @@
  */
 document.addEventListener('DOMContentLoaded', () => {
   // ====== 設定區 ======
-  const STUDENT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSpHhJIZj58uAemsVdEe4uZl89Pm7oFF9r1bDKBVFivi4oZjt68_Yd0kIGOFwzAZWH-_cZTFXGeusV6/pub?gid=688096353&single=true&output=csv';
-  const ATTEND_CSV  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRyf7kjbX2aMHJZdjpVG2f_KUERFelyPvf3YQl27vfsF7gmQjK5elgthuaygbVqT3bEfkp9uEzizy7_/pub?gid=735697632&single=true&output=csv';
+  const STUDENT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3P6p5UnGEkOSwMfRDNtmxhiTmpQigTBUe-CEWVKWLJNXDntJLeEE2XA3xpdi-iX_tMZsrdCT0RtAM/pub?gid=847317314&single=true&output=csv';
+  const ATTEND_CSV  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3P6p5UnGEkOSwMfRDNtmxhiTmpQigTBUe-CEWVKWLJNXDntJLeEE2XA3xpdi-iX_tMZsrdCT0RtAM/pub?gid=1642105191&single=true&output=csv';
 
   // 特殊主日：自動讀取年度行事曆，活動名稱符合下面關鍵字、且落在主日的，就算特殊主日
   const CALENDAR_PAGE = '../volunteers/calendar.html';
